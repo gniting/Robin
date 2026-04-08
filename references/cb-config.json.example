@@ -1,0 +1,8 @@
+{
+  "vault_path": "/opt/commonplace-book",
+  "topics_dir": "topics",
+  "min_items_before_review": 30,
+  "review_cooldown_days": 60,
+  "preferred_rating_scale": "1-5",
+  "file_naming": "kebab"
+}

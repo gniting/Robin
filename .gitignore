@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# User data — never commit
+cb-review-index.json
+cb-config.json
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo

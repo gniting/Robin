@@ -20,3 +20,8 @@ cb-config.json
 .idea/
 *.swp
 *.swo
+
+# AI related
+.codex/
+.claude/
+.codex

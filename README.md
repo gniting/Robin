@@ -1,17 +1,22 @@
 # Robin  ·  [skills.sh](https://github.com/vercel-labs/skills)
 
-A digital commonplace book for AI agents — collect, curate, and periodically review items from your personal knowledge base.
+A digital commonplace book for AI agents — collect, curate, and periodically review items from your personal digital Commonplace Book
 
-Inspired by the 17th–19th century tradition of collecting quotes, ideas, and observations in a personal "commonplace book." You feed Robin things you want to remember — quotes, articles, links, thoughts — and it files them into topic-organized markdown files. Robin also runs a spaced-repetition review engine that surfaces items on a schedule so you reinforce learning over time.
+## What is a Commonplace Book?
+
+A commonplace book is a personal collection of ideas, phrases, and passages worth keeping. Traditionally, it is a notebook where someone gathers quotations, observations, arguments, anecdotes, and striking turns of phrase from what they read or hear, then organizes them so those pieces can be revisited and used later. One of its most practical benefits is that it sharpens vocabulary: by repeatedly noticing, recording, and returning to precise language, a reader begins to absorb better words, clearer sentence patterns, and more nuanced ways of expressing ideas. That expanded command of language tends to improve communication, because stronger vocabulary makes it easier to speak and write with accuracy, persuasion, and confidence. Over time, a commonplace book becomes more than a record of reading. It turns into a tool for better thinking, better communication, and, by extension, better work, relationships, and decision-making.
+
 
 > Named for Robin Williams' portrayal of Sean Maguire in *Good Will Hunting* — a therapist who helped a brilliant but lost young man find his voice.
 
 ## Features
 
+You feed Robin things you want to remember — quotes, articles, links, thoughts — and it files them into topic-organized markdown files. Robin also runs a spaced-repetition review engine that surfaces items on a schedule so you reinforce learning over time.
+
 - Filing — Send Robin any content and it determines the right topic, files it away, and confirms
 - Topic management — Creates new topics on demand, suggests topic names, resolves conflicts
 - Spaced repetition review — Surfaces items on a configurable schedule so you reinforce learning
-- Rating — Rate surfaced items 1–5; Robin tracks what you care about most
+- Rating — Rate surfaced items 1–5; Robin tracks what you care about most over time
 - Searchable vault — All entries live in plain markdown topic files; open in Obsidian, Logseq, or any editor
 - Agent-agnostic — Works with any agent that implements a skills interface
 
@@ -86,13 +91,15 @@ hermes cron create \
 ```
 vault_path/
   topics/
-    ai-reasoning.md
-    investing.md
-    books-to-read.md
+    reasoning.md
+    lyrics.md
+    poerty.md
+    idioms.md
+    quotes.md
     ...
 ```
 
-Topic filename format: lowercase, spaces become dashes (e.g. "AI Reasoning" -> `ai-reasoning.md`).
+Topic filename format: lowercase, spaces become dashes (e.g. "Song Lyrics" -> `song-lyrics.md`).
 
 ## Topic File Format
 

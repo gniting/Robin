@@ -1,5 +1,5 @@
 {
-  "vault_path": "/opt/commonplace-book",
+  "vault_path": "/path/to/your/vault",
   "topics_dir": "topics",
   "media_dir": "media",
   "min_items_before_review": 30,

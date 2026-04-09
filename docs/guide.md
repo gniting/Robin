@@ -132,6 +132,24 @@ If a media item is rejected, Robin stores nothing and returns an error.
 
 ## CLI Reference
 
+Host agents should index Robin topic files when they support normal file search. That gives the agent broad semantic retrieval across the whole workspace.
+
+`robin-search` still matters because it is Robin-aware. It understands Robin's own structure and returns structured results with fields like stable entry id, topic, tags, media metadata, and rating.
+
+Use host/global search for:
+
+- broad semantic recall across all user content
+- exploratory queries where Robin is only one possible source
+
+Use `robin-search` for:
+
+- Robin-specific queries
+- topic filtering
+- tag filtering
+- deterministic Robin entry lookup
+- retrieving structured Robin fields in JSON
+- cases where host indexing is unavailable or stale
+
 Installed entry points:
 
 - `robin-add`

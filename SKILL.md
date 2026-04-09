@@ -129,10 +129,27 @@ Triggered by the review cron. Only runs when `items.count >= min_items_before_re
 
 - `robin review` — manually trigger a review cycle
 - `robin reindex` — rebuild review index from topic files (use after manual edits)
-- `robin search <query>` — find entries matching query across all topics
+- `robin search <query>` — query Robin entries with topic/tag filters and structured Robin-aware results
 - `robin topics` — list all existing topics
 - `robin add` — file something new (can also just send content directly)
 - `robin setup` — first-run config wizard
+
+### Search Guidance
+
+When the host supports file indexing, Robin topic files should be part of the host agent's searchable corpus.
+
+Use host/global search for:
+
+- broad semantic retrieval across the user's workspace
+- natural-language recall where Robin may or may not be the relevant source
+
+Use `robin-search` for:
+
+- Robin-specific lookup tasks
+- filtering by topic or tags
+- returning stable Robin ids and metadata
+- deterministic JSON output for Robin entries
+- fallback when host indexing is unavailable or stale
 
 ### CLI Contract
 
@@ -184,7 +201,7 @@ JSON add failure shape:
 ## Storage Layout
 
 ```
-vault_path/                       (e.g. /opt/commonplace-book)
+vault_path/                       (e.g. /path/to/your/vault)
   media/
     poetry/
       20260409-a1f3.png
@@ -295,7 +312,7 @@ hermes cron create \
 
 ```json
 {
-  "vault_path": "/opt/commonplace-book",
+  "vault_path": "/path/to/your/vault",
   "topics_dir": "topics",
   "media_dir": "media",
   "min_items_before_review": 30,

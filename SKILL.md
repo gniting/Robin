@@ -169,10 +169,11 @@ If the agent notices a Robin bug while using the skill, it should report the iss
 1. The user sends content to the AI agent.
 2. The agent lists existing topics with `python3 scripts/topics.py --state-dir <state-dir> --json`.
 3. The agent chooses a topic by name when there is a clear match.
-4. If topic names alone are ambiguous, the agent may inspect relevant topic files or use host search for more context.
+4. If topic names alone are ambiguous, the agent should inspect relevant topic files or use host search for more context.
 5. If two existing topics are still both plausible, the agent asks the user to choose.
 6. If no existing topic fits, the agent suggests a new reusable topic name and files the item there.
-7. For media items, the agent must also supply `creator`, `published_at`, and `summary`. If any are missing, Robin rejects the entry.
+7. Before calling `add_entry.py`, the agent checks for duplicates using the Content Policy below.
+8. For media items, the agent must also supply `creator`, `published_at`, and `summary`. If any are missing, Robin rejects the entry.
 
 ### Topic Strategy
 
@@ -193,6 +194,7 @@ If the agent notices a Robin bug while using the skill, it should report the iss
 - `description` is required context for every entry: why this item matters and how to recognize it later.
 - `summary` is required only for media entries: what the media itself contains.
 - `note` is optional agent commentary for extra curation, reminders, or connections to other entries.
+- Pass tags on the CLI as one comma-separated string, for example `--tags "writing,clarity"`. Robin stores them as a frontmatter list.
 
 ### Entry-Type Rules
 
@@ -428,3 +430,4 @@ Review settings such as `min_items_before_review` and `review_cooldown_days` liv
 - Uploaded or local video files are rejected.
 - A blank line is required after frontmatter.
 - Keep `id` stable when manually editing entries.
+- If `robin-config.json` contains invalid JSON, Robin exits with an error; recreate it as `{}` or with the supported config fields.

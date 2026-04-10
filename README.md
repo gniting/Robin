@@ -50,7 +50,7 @@ Your agent should handle Robin's setup and configuration automatically. As part 
 
 - `<agent workspace>/data/robin/topics/` for topic files
 - `<agent workspace>/data/robin/media/` for copied images
-- `<agent workspace>/data/robin/robin-config.json` for Robin settings
+- required `<agent workspace>/data/robin/robin-config.json` for Robin settings
 - optionally `<agent workspace>/data/robin/robin-review-index.json` for review state
 
 Your agent should pass Robin one of these every time it runs a Robin command:

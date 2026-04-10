@@ -189,6 +189,7 @@ Field semantics:
 - `description`: required context for every entry; why the item matters and how to recognize it later.
 - `summary`: required only for media entries; what the media itself contains.
 - `note`: optional curation commentary, reminders, or connections to other entries.
+- `tags`: pass on the CLI as one comma-separated string, for example `--tags "writing,clarity"`. Robin stores them as a frontmatter list.
 
 ## Media Rules
 
@@ -350,6 +351,8 @@ Example index shape:
 
 - Config not found:
   Create `robin-config.json` in the state directory and pass `--state-dir` or set `ROBIN_STATE_DIR`.
+- Config has invalid JSON:
+  Recreate `robin-config.json` as `{}` or with the supported config fields.
 - Review index not found:
   Robin can start without it. If you want to create it manually, use `{"items": {}}`.
 - Media entry rejected:

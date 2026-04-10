@@ -1,8 +1,8 @@
 ---
 name: robin
-description: Save and review notes, quotes, articles, links, images, and video references in a personal commonplace book. Use when the user wants to file something to remember, organize knowledge by topic, resurface saved items, or review prior entries.
+description: "Save and review notes, quotes, articles, links, images, and video references in a personal commonplace book. Use when the user wants to file something to remember, organize knowledge by topic, resurface saved items, or review prior entries."
 license: MIT
-compatibility: Requires Python 3.11+ and local filesystem access. Optional: a scheduler for periodic review.
+compatibility: "Requires Python 3.11+ and local filesystem access. Optional: a scheduler for periodic review."
 metadata:
   category: personal
 ---
@@ -173,6 +173,25 @@ If the agent notices a Robin bug while using the skill, it should report the iss
 5. If no match exists, the agent suggests a new topic, files the item, and flags it for review.
 6. For media items, the agent must also supply `creator`, `published_at`, and `summary`. If any are missing, Robin rejects the entry.
 
+### Topic Strategy
+
+- List existing topics with `python3 scripts/topics.py --state-dir <state-dir> --json` before filing.
+- Prefer reusing an existing topic over creating a near-duplicate.
+- Prefer durable, reusable topics such as `writing`, `poetry`, `ai-reasoning`, or `talks`; avoid one-off topics named after a single entry.
+- Create a new topic only when no existing topic clearly fits.
+- If two existing topics are both plausible, ask the user to choose instead of guessing.
+- Topic filenames are generated from topic names as lowercase slugs with non-alphanumeric characters normalized to dashes.
+
+### Content Policy
+
+- Check existing topic files or host search for obvious duplicates before filing.
+- If the new item appears to be an exact duplicate, ask the user whether to skip it or save another copy.
+- If the item is a near-duplicate with meaningful differences, file it only when the difference is worth preserving and explain that in `description`.
+- Robin has no hard body-size limit, but the agent should summarize very long articles/transcripts unless the user explicitly wants the full text stored.
+- `description` is required context for every entry: why this item matters and how to recognize it later.
+- `summary` is required only for media entries: what the media itself contains.
+- `note` is optional agent commentary for extra curation, reminders, or connections to other entries.
+
 ### Entry-Type Rules
 
 - `text`
@@ -181,7 +200,7 @@ If the agent notices a Robin bug while using the skill, it should report the iss
 - `image`
   - requires: `topic`, local image file path, `description`, `creator`, `published_at`, `summary`
   - optional: `content`, `source`, `note`, `tags`
-  - behavior: Robin copies the image into `media/` under the state directory
+  - behavior: Robin copies the image into `media/<topic-slug>/` under the state directory and creates that subdirectory automatically
 - `video`
   - requires: `topic`, video URL, `description`, `creator`, `published_at`, `summary`
   - optional: `content`, `source`, `note`, `tags`
@@ -263,6 +282,16 @@ All Robin commands accept:
 
 - `--state-dir`
 
+Agents should use `--json` whenever they need to parse command output. Without `--json`, Robin prints human-readable text for interactive use; that text is not a stable machine contract.
+
+CLI flags by command:
+
+- `add_entry.py`: `--state-dir`, `--topic`, `--entry-type text|image|video`, `--content`, `--description`, `--source`, `--media-path`, `--media-url`, `--creator`, `--published-at`, `--summary`, `--note`, `--tags`, `--json`
+- `review.py`: `--state-dir`, `--status`, `--rate ID RATING`, `--json`
+- `search.py`: `--state-dir`, optional query argument, `--topic`, `--tags`, `--json`
+- `topics.py`: `--state-dir`, `--json`
+- `reindex.py`: `--state-dir`, `--json`
+
 Examples:
 
 The examples below use the repo-local `python3 scripts/*.py` path. The installed `robin-*` commands are equivalent aliases if the package has been installed.
@@ -337,6 +366,8 @@ Exit status on failure:
 
 Entries are separated by `***`. Each entry is a frontmatter block followed by a blank line and then the body text.
 
+Text entries may omit `entry_type`; omitted `entry_type` is parsed as `text`.
+
 ```text
 id: 20260408-a1f3c9
 date_added: 2026-04-08
@@ -370,7 +401,7 @@ Frontmatter parsing rules:
       "topic": "ai-reasoning",
       "date": "2026-04-08",
       "rating": null,
-      "last_surfaced": "2026-04-08T10:00:00+00:00",
+      "last_surfaced": null,
       "times_surfaced": 0,
       "_awaiting_rating": false
     }

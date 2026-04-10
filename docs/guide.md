@@ -126,6 +126,8 @@ Examples:
 
 Entries are separated by `***`. Each entry has frontmatter, then a blank line, then the body.
 
+Text entries may omit `entry_type`; omitted `entry_type` is parsed as `text`.
+
 Text example:
 
 ```text
@@ -167,11 +169,28 @@ Field meanings:
 - `creator`, `published_at`, `summary`: required for media entries
 - `tags`: optional tag list
 
+## Topic and Content Policy
+
+- Prefer reusing an existing topic over creating a near-duplicate.
+- Prefer durable, reusable topics such as `writing`, `poetry`, `ai-reasoning`, or `talks`.
+- Create a new topic only when no existing topic clearly fits.
+- Ask the user when two existing topics are both plausible.
+- Check existing topic files or host search for obvious duplicates before filing.
+- Ask before saving exact duplicates.
+- For near-duplicates, save only when the difference is worth preserving and explain the difference in `description`.
+- Robin has no hard body-size limit, but agents should summarize very long articles or transcripts unless the user explicitly asks to store the full text.
+
+Field semantics:
+
+- `description`: required context for every entry; why the item matters and how to recognize it later.
+- `summary`: required only for media entries; what the media itself contains.
+- `note`: optional curation commentary, reminders, or connections to other entries.
+
 ## Media Rules
 
 Robin accepts media with these rules:
 
-- local image files: accepted and copied into the media directory
+- local image files: accepted and copied into `media/<topic-slug>/`; Robin creates the topic subdirectory automatically
 - remote image URLs: not supported directly by Robin's CLI
 - video URLs: accepted and stored by reference
 - uploaded or local video files: rejected
@@ -226,6 +245,16 @@ Repo-local equivalents:
 - `python3 scripts/topics.py`
 
 All Robin commands support `--state-dir`.
+
+Use `--json` whenever command output needs to be parsed programmatically. Without `--json`, Robin prints human-readable text for interactive use; that text is not a stable machine contract.
+
+CLI flags by command:
+
+- `add_entry.py`: `--state-dir`, `--topic`, `--entry-type text|image|video`, `--content`, `--description`, `--source`, `--media-path`, `--media-url`, `--creator`, `--published-at`, `--summary`, `--note`, `--tags`, `--json`
+- `review.py`: `--state-dir`, `--status`, `--rate ID RATING`, `--json`
+- `search.py`: `--state-dir`, optional query argument, `--topic`, `--tags`, `--json`
+- `topics.py`: `--state-dir`, `--json`
+- `reindex.py`: `--state-dir`, `--json`
 
 Recommended path for agents:
 
@@ -296,7 +325,7 @@ Example index shape:
       "topic": "ai-reasoning",
       "date": "2026-04-08",
       "rating": null,
-      "last_surfaced": "2026-04-08T10:00:00+00:00",
+      "last_surfaced": null,
       "times_surfaced": 0,
       "_awaiting_rating": false
     }

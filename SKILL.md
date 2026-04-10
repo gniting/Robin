@@ -49,7 +49,7 @@ On setup, the agent should:
 2. create the state directory if it does not exist
 3. create `robin-config.json` in that directory if it does not exist
 4. ensure the state directory contains `topics/` and `media/`
-5. optionally create `robin-review-index.json`; Robin will create an empty in-memory index if it is missing
+5. optionally create `robin-review-index.json`; if it is missing, Robin starts with an empty index and writes the file when review state is saved
 6. ask the user how often reviews should happen and when they should run
 7. verify setup by running `python3 scripts/topics.py --state-dir <state-dir>`
 
@@ -66,7 +66,7 @@ Example `robin-config.json`:
 
 Robin does not need a separate content-root path. Topic files and copied media live inside the state directory under `topics/` and `media/`.
 
-All config fields are optional. Robin defaults to:
+`robin-config.json` itself is required, but it may be an empty JSON object (`{}`). All fields inside it are optional. Robin defaults to:
 
 - `topics_dir`: `topics`
 - `media_dir`: `media`
@@ -111,9 +111,9 @@ Default runnable path:
 
 No `pip install -e .` or manual path setup is required for this repo-local script path.
 
-Optional installed path:
+Optional installed path for advanced users:
 
-- if the agent runs `pip install -e .`, Robin also exposes:
+- if the user explicitly wants installed entry points and the agent runs `pip install -e .`, Robin also exposes:
   - `robin-add`
   - `robin-review`
   - `robin-reindex`
@@ -167,11 +167,12 @@ If the agent notices a Robin bug while using the skill, it should report the iss
 ## Filing
 
 1. The user sends content to the AI agent.
-2. The agent scans existing topic files and picks the best match.
-3. If confident, the agent files the item and confirms.
-4. If unsure between topics, the agent asks the user to choose.
-5. If no match exists, the agent suggests a new topic, files the item, and flags it for review.
-6. For media items, the agent must also supply `creator`, `published_at`, and `summary`. If any are missing, Robin rejects the entry.
+2. The agent lists existing topics with `python3 scripts/topics.py --state-dir <state-dir> --json`.
+3. The agent chooses a topic by name when there is a clear match.
+4. If topic names alone are ambiguous, the agent may inspect relevant topic files or use host search for more context.
+5. If two existing topics are still both plausible, the agent asks the user to choose.
+6. If no existing topic fits, the agent suggests a new reusable topic name and files the item there.
+7. For media items, the agent must also supply `creator`, `published_at`, and `summary`. If any are missing, Robin rejects the entry.
 
 ### Topic Strategy
 
@@ -184,7 +185,8 @@ If the agent notices a Robin bug while using the skill, it should report the iss
 
 ### Content Policy
 
-- Check existing topic files or host search for obvious duplicates before filing.
+- Before filing, run `python3 scripts/search.py --state-dir <state-dir> "<distinctive phrase from the content>" --json` or use host search against Robin topic files.
+- Treat an entry as an obvious duplicate when a returned entry has the same source URL or substantially the same body text.
 - If the new item appears to be an exact duplicate, ask the user whether to skip it or save another copy.
 - If the item is a near-duplicate with meaningful differences, file it only when the difference is worth preserving and explain that in `description`.
 - Robin has no hard body-size limit, but the agent should summarize very long articles/transcripts unless the user explicitly wants the full text stored.
@@ -241,6 +243,12 @@ Review behavior:
 
 If the agent calls `--rate` directly on an item that was not surfaced first, Robin still sets `last_surfaced`, increments `times_surfaced`, and leaves `_awaiting_rating` as `false`.
 
+Preferred rating flow:
+
+- Use `python3 scripts/review.py --state-dir <state-dir> --json` to surface an item.
+- After the user rates that surfaced item, call `python3 scripts/review.py --state-dir <state-dir> --rate <id> <rating> --json`.
+- Use direct `--rate` without a prior surface only for manual corrections or when the user explicitly names an existing entry id.
+
 ## Search Guidance
 
 When the host supports file indexing, Robin topic files should be part of the host agent's searchable corpus.
@@ -262,21 +270,21 @@ Use `robin-search` for:
 
 ## Commands
 
-Installed entry points:
-
-- `robin-add`
-- `robin-review`
-- `robin-reindex`
-- `robin-search`
-- `robin-topics`
-
-Repo-local equivalents:
+Default repo-local commands for agents:
 
 - `python3 scripts/add_entry.py`
 - `python3 scripts/review.py`
 - `python3 scripts/reindex.py`
 - `python3 scripts/search.py`
 - `python3 scripts/topics.py`
+
+Optional installed entry points for advanced users:
+
+- `robin-add`
+- `robin-review`
+- `robin-reindex`
+- `robin-search`
+- `robin-topics`
 
 All Robin commands accept:
 
@@ -288,7 +296,7 @@ CLI flags by command:
 
 - `add_entry.py`: `--state-dir`, `--topic`, `--entry-type text|image|video`, `--content`, `--description`, `--source`, `--media-path`, `--media-url`, `--creator`, `--published-at`, `--summary`, `--note`, `--tags`, `--json`
 - `review.py`: `--state-dir`, `--status`, `--rate ID RATING`, `--json`
-- `search.py`: `--state-dir`, optional query argument, `--topic`, `--tags`, `--json`
+- `search.py`: `--state-dir`, optional positional `query` string, `--topic`, `--tags`, `--json`
 - `topics.py`: `--state-dir`, `--json`
 - `reindex.py`: `--state-dir`, `--json`
 
@@ -311,6 +319,7 @@ The examples below use the repo-local `python3 scripts/*.py` path. The installed
 - `python3 scripts/search.py --state-dir /path/to/data/robin --topic "AI Reasoning" --tags "clarity" --json`
 - `python3 scripts/topics.py --state-dir /path/to/data/robin --json`
 - `python3 scripts/reindex.py --state-dir /path/to/data/robin`
+- `python3 scripts/reindex.py --state-dir /path/to/data/robin --json`
 
 Use `python3 scripts/reindex.py --state-dir <state-dir>` after manual edits to topic files, when rebuilding review state from existing markdown, or when importing legacy entries and wanting the review index rebuilt from disk.
 

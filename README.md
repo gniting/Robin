@@ -26,13 +26,13 @@ Over time, a commonplace book becomes more than a record of reading. It turns in
 - Spaced repetition review — Surfaces items on a configurable schedule so you reinforce learning
 - Rating — Rate surfaced items 1–5; Robin tracks what you care about most over time
 - Searchable library — All entries live in plain markdown topic files; open in Obsidian, Logseq, or any editor
-- Agent-agnostic — Works with any agent that implements a skills interface
+- Agent-agnostic — Works with any agent that can read/write local files, run Python scripts, and pass CLI arguments or environment variables
 
 ## Before You Start
 
 You need:
 
-- an AI agent that supports local skills
+- an AI agent that can read/write local files and run Python scripts
 - Python 3.11+
 - a local folder in your agent workspace where Robin can store its files
 

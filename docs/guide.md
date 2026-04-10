@@ -69,7 +69,7 @@ mkdir -p /path/to/agent-workspace/data/robin/topics
 mkdir -p /path/to/agent-workspace/data/robin/media
 ```
 
-Create `/path/to/agent-workspace/data/robin/robin-config.json`:
+Create `/path/to/agent-workspace/data/robin/robin-config.json`. The file is required, but it may be an empty JSON object (`{}`):
 
 ```json
 {
@@ -82,7 +82,7 @@ Create `/path/to/agent-workspace/data/robin/robin-config.json`:
 
 Robin does not need a separate content-root path. Topic files and copied media live inside the state directory under `topics/` and `media/`.
 
-All config fields are optional. Robin defaults to:
+All fields inside `robin-config.json` are optional. Robin defaults to:
 
 - `topics_dir`: `topics`
 - `media_dir`: `media`
@@ -97,7 +97,7 @@ Optional: create `/path/to/agent-workspace/data/robin/robin-review-index.json`:
 }
 ```
 
-If the file is missing, Robin starts with an empty in-memory index and writes it when needed.
+If the review index file is missing, Robin starts with an empty index and writes the file when review state is saved.
 
 Then either export the state dir:
 
@@ -171,11 +171,15 @@ Field meanings:
 
 ## Topic and Content Policy
 
+- Start filing by running `python3 scripts/topics.py --state-dir <state-dir> --json`.
+- Choose a topic by name when there is a clear match.
+- If topic names alone are ambiguous, inspect relevant topic files or use host search for more context.
 - Prefer reusing an existing topic over creating a near-duplicate.
 - Prefer durable, reusable topics such as `writing`, `poetry`, `ai-reasoning`, or `talks`.
 - Create a new topic only when no existing topic clearly fits.
 - Ask the user when two existing topics are both plausible.
-- Check existing topic files or host search for obvious duplicates before filing.
+- Before filing, run `python3 scripts/search.py --state-dir <state-dir> "<distinctive phrase from the content>" --json` or use host search against Robin topic files.
+- Treat an entry as an obvious duplicate when a returned entry has the same source URL or substantially the same body text.
 - Ask before saving exact duplicates.
 - For near-duplicates, save only when the difference is worth preserving and explain the difference in `description`.
 - Robin has no hard body-size limit, but agents should summarize very long articles or transcripts unless the user explicitly asks to store the full text.
@@ -228,21 +232,21 @@ Use `robin-search` for:
 
 ## CLI Reference
 
-Installed entry points:
-
-- `robin-add`
-- `robin-review`
-- `robin-reindex`
-- `robin-search`
-- `robin-topics`
-
-Repo-local equivalents:
+Default repo-local commands for agents:
 
 - `python3 scripts/add_entry.py`
 - `python3 scripts/review.py`
 - `python3 scripts/reindex.py`
 - `python3 scripts/search.py`
 - `python3 scripts/topics.py`
+
+Optional installed entry points for advanced users:
+
+- `robin-add`
+- `robin-review`
+- `robin-reindex`
+- `robin-search`
+- `robin-topics`
 
 All Robin commands support `--state-dir`.
 
@@ -252,7 +256,7 @@ CLI flags by command:
 
 - `add_entry.py`: `--state-dir`, `--topic`, `--entry-type text|image|video`, `--content`, `--description`, `--source`, `--media-path`, `--media-url`, `--creator`, `--published-at`, `--summary`, `--note`, `--tags`, `--json`
 - `review.py`: `--state-dir`, `--status`, `--rate ID RATING`, `--json`
-- `search.py`: `--state-dir`, optional query argument, `--topic`, `--tags`, `--json`
+- `search.py`: `--state-dir`, optional positional `query` string, `--topic`, `--tags`, `--json`
 - `topics.py`: `--state-dir`, `--json`
 - `reindex.py`: `--state-dir`, `--json`
 
@@ -265,7 +269,7 @@ Optional path for advanced users:
 - `pip install -e .`
 - then use the installed `robin-add`, `robin-review`, `robin-reindex`, `robin-search`, and `robin-topics` entry points
 
-The repo-local `python3 scripts/*.py` commands work without `pip install -e .` or manual path setup. Internally, each wrapper adds Robin's `src/` directory to `sys.path` before importing `robin.*`.
+The repo-local `python3 scripts/*.py` commands work without `pip install -e .` or manual path setup.
 
 Examples:
 
@@ -285,6 +289,7 @@ python3 scripts/add_entry.py --state-dir /path/to/data/robin --topic "reasoning"
 python3 scripts/add_entry.py --state-dir /path/to/data/robin --entry-type image --topic "poetry" --media-path ~/Downloads/poem.png --description "A photographed poem excerpt worth revisiting." --creator "Mary Oliver" --published-at "1986" --summary "An excerpt about attention and observation." --json
 python3 scripts/add_entry.py --state-dir /path/to/data/robin --entry-type video --topic "talks" --media-url "https://www.youtube.com/watch?v=abc123" --description "A talk to revisit for its framing and examples." --creator "Speaker Name" --published-at "2025-01-01" --summary "A concise summary of the talk." --json
 python3 scripts/reindex.py --state-dir /path/to/data/robin
+python3 scripts/reindex.py --state-dir /path/to/data/robin --json
 ```
 
 The examples above use the repo-local `python3 scripts/*.py` path. If you installed the package with `pip install -e .`, the `robin-*` entry points are equivalent aliases.
@@ -312,6 +317,12 @@ Review behavior:
 7. A subsequent `--rate` call for that surfaced item overwrites the previous rating and sets `_awaiting_rating` back to `false` without incrementing `times_surfaced` again.
 
 If `--rate` is called directly on an item that was not surfaced first, Robin still sets `last_surfaced`, increments `times_surfaced`, and keeps `_awaiting_rating` as `false`.
+
+Preferred rating flow:
+
+- Use `python3 scripts/review.py --state-dir <state-dir> --json` to surface an item.
+- After the user rates that surfaced item, call `python3 scripts/review.py --state-dir <state-dir> --rate <id> <rating> --json`.
+- Use direct `--rate` without a prior surface only for manual corrections or when the user explicitly names an existing entry id.
 
 Setup guidance for hosts: ask the user how often reviews should happen and when they should run. If the host supports scheduling, a daily or weekly trigger is the normal default. Otherwise, keep review available as an on-demand command.
 

@@ -113,6 +113,18 @@ python3 scripts/topics.py --state-dir /path/to/agent-workspace/data/robin
 
 This is also the simplest setup verification step. A healthy empty setup returns `No topics yet. Start filing things with Robin!`
 
+For a fuller integration check that does not touch the user's real library, run:
+
+```bash
+python3 scripts/selftest.py
+```
+
+For a non-destructive setup check against a real state directory, run:
+
+```bash
+python3 scripts/selftest.py --state-dir /path/to/agent-workspace/data/robin
+```
+
 ## Topic Files
 
 Robin stores content in topic-organized Markdown files under `topics/`.
@@ -239,6 +251,7 @@ Default repo-local commands for agents:
 - `python3 scripts/review.py`
 - `python3 scripts/reindex.py`
 - `python3 scripts/search.py`
+- `python3 scripts/selftest.py`
 - `python3 scripts/topics.py`
 
 Optional installed entry points for advanced users:
@@ -258,6 +271,7 @@ CLI flags by command:
 - `add_entry.py`: `--state-dir`, `--topic`, `--entry-type text|image|video`, `--content`, `--description`, `--source`, `--media-path`, `--media-url`, `--creator`, `--published-at`, `--summary`, `--note`, `--tags`, `--json`
 - `review.py`: `--state-dir`, `--status`, `--rate ID RATING`, `--json`
 - `search.py`: `--state-dir`, optional positional `query` string, `--topic`, `--tags`, `--json`
+- `selftest.py`: optional `--state-dir` for non-destructive setup checks, `--keep-temp`
 - `topics.py`: `--state-dir`, `--json`
 - `reindex.py`: `--state-dir`, `--json`
 
@@ -284,6 +298,8 @@ python3 scripts/search.py --state-dir /path/to/data/robin --topic "AI Reasoning"
 python3 scripts/search.py --state-dir /path/to/data/robin --tags "writing,clarity" --json
 python3 scripts/search.py --state-dir /path/to/data/robin --topic "AI Reasoning" --tags "clarity" --json
 python3 scripts/topics.py --state-dir /path/to/data/robin --json
+python3 scripts/selftest.py
+python3 scripts/selftest.py --state-dir /path/to/data/robin
 python3 scripts/add_entry.py --state-dir /path/to/data/robin --topic "reasoning" --content "The most important thing is to decide what you are optimizing for." --description "A short Paul Graham line about choosing the objective before optimizing. Useful when reviewing tradeoff-heavy decisions." --json
 python3 scripts/add_entry.py --state-dir /path/to/data/robin --topic "writing" --content "Write as if speaking to a smart friend." --description "A reminder to keep prose conversational and clear." --source "https://example.com/article" --note "Pair this with other writing advice." --json
 python3 scripts/add_entry.py --state-dir /path/to/data/robin --topic "reasoning" --content "The map is not the territory." --description "A reminder that abstractions are not reality itself." --tags "thinking,quotes" --json

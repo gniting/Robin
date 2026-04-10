@@ -40,6 +40,33 @@ def test_add_entry_writes_markdown_and_index(robin_env, monkeypatch, capsys):
     assert index["items"][output["id"]]["topic"] == "ai-reasoning"
 
 
+def test_add_entry_respects_explicit_state_dir_without_env(robin_env, monkeypatch, capsys):
+    monkeypatch.delenv("ROBIN_STATE_DIR", raising=False)
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "add_entry.py",
+            "--state-dir",
+            str(robin_env["state_dir"]),
+            "--topic",
+            "AI Reasoning",
+            "--content",
+            "State dir should be explicit.",
+            "--description",
+            "Regression coverage for explicit state directory usage without an environment variable.",
+            "--json",
+        ],
+    )
+
+    add_entry.main()
+    output = json.loads(capsys.readouterr().out)
+
+    topic_file = robin_env["topics_dir"] / "ai-reasoning.md"
+    content = topic_file.read_text(encoding="utf-8")
+    assert f"id: {output['id']}" in content
+    assert "State dir should be explicit." in content
+
+
 def test_add_image_entry_copies_media(robin_env, monkeypatch, capsys):
     image_path = robin_env["tmp_path"] / "poem.png"
     image_path.write_bytes(b"fake-image")

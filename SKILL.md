@@ -107,6 +107,7 @@ Default runnable path:
   - `python3 scripts/review.py`
   - `python3 scripts/reindex.py`
   - `python3 scripts/search.py`
+  - `python3 scripts/selftest.py`
   - `python3 scripts/topics.py`
 
 No `pip install -e .` or manual path setup is required for this repo-local script path.
@@ -121,6 +122,24 @@ Optional installed path for advanced users:
   - `robin-topics`
 
 For advanced manual setup details and shell examples, see [docs/guide.md](docs/guide.md).
+
+## Selftest
+
+After setup or after a Robin upgrade, the agent can run:
+
+```bash
+python3 scripts/selftest.py
+```
+
+By default, this uses a temporary state directory and does not touch the user's real Robin library. It verifies setup, add, search, review, rating, rejection, and reindex behavior against the documented JSON contracts.
+
+For a non-destructive check of a real state directory, run:
+
+```bash
+python3 scripts/selftest.py --state-dir <state-dir>
+```
+
+That mode checks only that `robin-config.json`, `topics/`, `media/`, and `topics.py --json` work for the supplied state directory.
 
 ## Agent Responsibilities
 
@@ -278,6 +297,7 @@ Default repo-local commands for agents:
 - `python3 scripts/review.py`
 - `python3 scripts/reindex.py`
 - `python3 scripts/search.py`
+- `python3 scripts/selftest.py`
 - `python3 scripts/topics.py`
 
 Optional installed entry points for advanced users:
@@ -299,6 +319,7 @@ CLI flags by command:
 - `add_entry.py`: `--state-dir`, `--topic`, `--entry-type text|image|video`, `--content`, `--description`, `--source`, `--media-path`, `--media-url`, `--creator`, `--published-at`, `--summary`, `--note`, `--tags`, `--json`
 - `review.py`: `--state-dir`, `--status`, `--rate ID RATING`, `--json`
 - `search.py`: `--state-dir`, optional positional `query` string, `--topic`, `--tags`, `--json`
+- `selftest.py`: optional `--state-dir` for non-destructive setup checks, `--keep-temp`
 - `topics.py`: `--state-dir`, `--json`
 - `reindex.py`: `--state-dir`, `--json`
 
@@ -320,6 +341,8 @@ The examples below use the repo-local `python3 scripts/*.py` path. The installed
 - `python3 scripts/search.py --state-dir /path/to/data/robin --tags "writing,clarity" --json`
 - `python3 scripts/search.py --state-dir /path/to/data/robin --topic "AI Reasoning" --tags "clarity" --json`
 - `python3 scripts/topics.py --state-dir /path/to/data/robin --json`
+- `python3 scripts/selftest.py`
+- `python3 scripts/selftest.py --state-dir /path/to/data/robin`
 - `python3 scripts/reindex.py --state-dir /path/to/data/robin`
 - `python3 scripts/reindex.py --state-dir /path/to/data/robin --json`
 

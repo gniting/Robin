@@ -26,8 +26,8 @@ def _emit_json(payload: dict) -> None:
     print(json.dumps(payload, indent=2))
 
 
-def _add_to_topic(config: dict, topic: str, entry_text: str) -> str:
-    base = topics_path(config)
+def _add_to_topic(config: dict, explicit_state_dir: str | None, topic: str, entry_text: str) -> str:
+    base = topics_path(config, explicit_state_dir)
     base.mkdir(parents=True, exist_ok=True)
     filepath = base / topic_to_filename(topic)
 
@@ -150,7 +150,7 @@ def add_main(argv: list[str] | None = None) -> None:
     serialized_entry = serialize_entry(entry)
     _validate_serialized_entry(serialized_entry, as_json=args.json)
     try:
-        filename = _add_to_topic(config, topic, serialized_entry)
+        filename = _add_to_topic(config, args.state_dir, topic, serialized_entry)
     except OSError as exc:
         _error(f"Failed to write topic file: {exc}", as_json=args.json)
     ensure_entry_in_index(entry, index)

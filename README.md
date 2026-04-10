@@ -65,6 +65,8 @@ Typical host examples:
 
 By default, an agent can run Robin immediately through the repo-local Python scripts in `scripts/`. No `pip install -e .` or manual path setup is required. Installing the package to get the `robin-add`, `robin-review`, and related entry points is optional.
 
+After setup, your agent can run `python3 scripts/selftest.py` to verify Robin's add, search, review, rate, failure, and reindex paths in a temporary state directory without touching your real Robin library.
+
 If your agent supports file indexing, it should index Robin's topic files like any other Markdown content. Use your agent's normal search for broad recall across your whole workspace.
 
 ## Use Robin Through Your Agent
@@ -93,6 +95,7 @@ See [docs/guide.md](docs/guide.md) for the advanced guide, including:
 - storage layout and runtime behavior
 - CLI usage and manual workflows
 - review/index behavior
+- selftest verification
 - host-specific examples
 - troubleshooting and compatibility notes
 

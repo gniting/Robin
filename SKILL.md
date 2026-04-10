@@ -51,7 +51,8 @@ On setup, the agent should:
 4. ensure the state directory contains `topics/` and `media/`
 5. optionally create `robin-review-index.json`; if it is missing, Robin starts with an empty index and writes the file when review state is saved
 6. ask the user how often reviews should happen and when they should run
-7. verify setup by running `python3 scripts/topics.py --state-dir <state-dir>`
+7. verify setup with a quick check by running `python3 scripts/topics.py --state-dir <state-dir>`
+8. optionally run the full integration check with `python3 scripts/selftest.py`
 
 Example `robin-config.json`:
 

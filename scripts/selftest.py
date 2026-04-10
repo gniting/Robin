@@ -71,10 +71,13 @@ def _run_json(args: list[str], *, expect_success: bool = True) -> dict | list:
         raise SelftestFailure(f"Command failed: {' '.join(args)}\n{proc.stderr}{proc.stdout}")
     if not expect_success and proc.returncode == 0:
         raise SelftestFailure(f"Command unexpectedly succeeded: {' '.join(args)}\n{proc.stdout}")
+    output = proc.stdout.strip() or proc.stderr.strip()
     try:
-        return json.loads(proc.stdout)
+        return json.loads(output)
     except json.JSONDecodeError as exc:
-        raise SelftestFailure(f"Command did not return valid JSON: {' '.join(args)}\n{proc.stdout}") from exc
+        raise SelftestFailure(
+            f"Command did not return valid JSON: {' '.join(args)}\nstdout:\n{proc.stdout}\nstderr:\n{proc.stderr}"
+        ) from exc
 
 
 def _require_keys(payload: dict, keys: set[str]) -> None:
@@ -220,6 +223,10 @@ def _check_duplicate_allowed(state_dir: Path) -> None:
     payload = _add_text_entry(state_dir)
     if not payload.get("id"):
         raise SelftestFailure(f"Duplicate add did not return an id: {payload}")
+    topics = _check_topics_json(state_dir)
+    match = next((item for item in topics if item.get("topic") == "robin-selftest"), None)
+    if not match or match.get("entries") < 2:
+        raise SelftestFailure(f"Expected duplicate add to create a second entry, got {topics}")
 
 
 def _check_local_video_rejected(state_dir: Path) -> None:
@@ -296,6 +303,8 @@ def _run_setup_checks(reporter: Reporter, state_dir: Path) -> None:
 
 
 def _run_full_selftest(reporter: Reporter, state_dir: Path) -> None:
+    # This order is intentional: review/rate validates the single-entry path
+    # before the duplicate acceptance check adds a second entry.
     reporter.check("temporary state directory initialized", lambda: _write_config(state_dir))
     _run_setup_checks(reporter, state_dir)
     added = reporter.check("add text entry returns expected shape", lambda: _add_text_entry(state_dir))
@@ -322,19 +331,22 @@ def main() -> None:
 
     reporter = Reporter()
     temp_dir: str | None = None
-    if args.state_dir:
-        state_dir = Path(args.state_dir).expanduser().resolve()
-        _run_setup_checks(reporter, state_dir)
-    else:
-        temp_dir = tempfile.mkdtemp(prefix="robin-selftest-")
-        state_dir = Path(temp_dir) / "data" / "robin"
-        _run_full_selftest(reporter, state_dir)
-
-    reporter.print_report(state_dir)
-    if temp_dir and not args.keep_temp:
-        shutil.rmtree(temp_dir, ignore_errors=True)
-    elif temp_dir:
-        print(f"Temporary files kept at: {temp_dir}")
+    state_dir = Path(args.state_dir).expanduser().resolve() if args.state_dir else None
+    try:
+        if state_dir:
+            _run_setup_checks(reporter, state_dir)
+        else:
+            temp_dir = tempfile.mkdtemp(prefix="robin-selftest-")
+            state_dir = Path(temp_dir) / "data" / "robin"
+            _run_full_selftest(reporter, state_dir)
+    finally:
+        if state_dir is not None:
+            reporter.print_report(state_dir)
+        if temp_dir:
+            if reporter.ok and not args.keep_temp:
+                shutil.rmtree(temp_dir, ignore_errors=True)
+            else:
+                print(f"Temporary files kept at: {temp_dir}")
 
     raise SystemExit(0 if reporter.ok else 1)
 

@@ -325,6 +325,26 @@ Robin maintains a review index keyed by entry `id`. It stores:
 - `last_surfaced`
 - `times_surfaced`
 
+Scheduled recall means Robin resurfaces an item for learning. It is not an active review session. Cron or scheduled recall messages should use the same recall template for every entry type and should not ask the user to reply with a bare `1`-`5` rating.
+
+Default recall text output:
+
+```text
+📚 Robin Recall: Helping you learn
+
+Topic: <topic>
+Type: <entry_type>
+Source: <source if present, else media_source if present, else "Not provided">
+Creator: <creator if present, else "Not provided">
+Saved on: <date_added>
+
+Description:
+<description if present, else "Not provided">
+
+Body:
+<body if present, else "Not provided">
+```
+
 Review behavior:
 
 1. Robin waits until there are at least `min_items_before_review` items.
@@ -342,8 +362,9 @@ Preferred rating flow:
 - Use `python3 scripts/review.py --state-dir <state-dir> --json` to surface an item.
 - After the user rates that surfaced item, call `python3 scripts/review.py --state-dir <state-dir> --rate <id> <rating> --json`.
 - Use direct `--rate` without a prior surface only for manual corrections or when the user explicitly names an existing entry id.
+- Do not request ratings in scheduled recall messages. Only rate during active review sessions or when the user explicitly names a Robin item id.
 
-Setup guidance for hosts: ask the user how often reviews should happen and when they should run. If the host supports scheduling, a daily or weekly trigger is the normal default. Otherwise, keep review available as an on-demand command.
+Setup guidance for hosts: ask the user how often recall should happen and when it should run. If the host supports scheduling, a daily or weekly recall trigger is the normal default. Otherwise, keep active review available as an on-demand command.
 
 Example index shape:
 

@@ -103,7 +103,9 @@ Robin's own search is useful when your agent needs Robin-specific structure such
 
 ## Resurfacing items for reinforcement learning
 
-As part of setup, your agent should ask you how often reviews should happen and when you want them to run. Robin does not run a scheduler itself; your agent or host environment should trigger review on that schedule, or keep review available on demand if you prefer not to automate it.
+As part of setup, your agent should ask you how often recall should happen and when you want it to run. Robin does not run a scheduler itself; your agent or host environment should trigger recall on that schedule, or keep active review available on demand if you prefer not to automate it.
+
+Scheduled recall means Robin resurfaces an item for learning. It is not an active review session, and it should not ask you to reply with a bare 1-5 rating. Ratings are still supported in active review sessions when your agent has the surfaced Robin item id and can intentionally run Robin's rating command.
 
 ## Need More Detail?
 

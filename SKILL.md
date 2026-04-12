@@ -50,7 +50,7 @@ On setup, the agent should:
 3. create `robin-config.json` in that directory if it does not exist
 4. ensure the state directory contains `topics/` and `media/`
 5. optionally create `robin-review-index.json`; if it is missing, Robin starts with an empty index and writes the file when review state is saved
-6. ask the user how often reviews should happen and when they should run
+6. ask the user how often scheduled recall should happen and when it should run
 7. verify setup with a quick check by running `python3 scripts/topics.py --state-dir <state-dir>`
 8. optionally run the full integration check with `python3 scripts/selftest.py`
 
@@ -251,7 +251,27 @@ When the add operation fails, the agent should pass the returned error back to t
 
 Review is host-triggered. Robin itself does not run a scheduler.
 
-During setup, the agent should ask the user what review cadence they want. If the host supports scheduling, the agent should usually configure a daily or weekly review trigger at the user's preferred time. Otherwise, the agent should expose review as an on-demand action.
+During setup, the agent should ask the user what recall cadence they want. If the host supports scheduling, the agent should usually configure a daily or weekly recall trigger at the user's preferred time. Otherwise, the agent should expose active review as an on-demand action.
+
+Scheduled recall means Robin resurfaces an item for learning. It is not an active review session, and cron or scheduled recall messages must not ask the user to reply with a bare `1`-`5` rating because the agent may not know that a later numeric reply refers to Robin.
+
+Default recall text output:
+
+```text
+📚 Robin Recall: Helping you learn
+
+Topic: <topic>
+Type: <entry_type>
+Source: <source if present, else media_source if present, else "Not provided">
+Creator: <creator if present, else "Not provided">
+Saved on: <date_added>
+
+Description:
+<description if present, else "Not provided">
+
+Body:
+<body if present, else "Not provided">
+```
 
 Review behavior:
 
@@ -272,6 +292,7 @@ Preferred rating flow:
 - Use `python3 scripts/review.py --state-dir <state-dir> --json` to surface an item.
 - After the user rates that surfaced item, call `python3 scripts/review.py --state-dir <state-dir> --rate <id> <rating> --json`.
 - Use direct `--rate` without a prior surface only for manual corrections or when the user explicitly names an existing entry id.
+- Do not request ratings in scheduled recall messages. Only rate during active review sessions or when the user explicitly names a Robin item id.
 
 ## Search Guidance
 

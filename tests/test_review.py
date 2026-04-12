@@ -12,6 +12,25 @@ from robin.serializer import build_media_entry, build_text_entry, serialize_entr
 from scripts import review
 
 
+def _save_review_entry(robin_env, filename: str, entry) -> None:
+    topic_file = robin_env["topics_dir"] / filename
+    topic_file.write_text(serialize_entry(entry) + "\n", encoding="utf-8")
+    save_index(
+        {
+            "items": {
+                entry.entry_id: {
+                    "id": entry.entry_id,
+                    "topic": entry.topic,
+                    "date": entry.date_added,
+                    "rating": None,
+                    "last_surfaced": None,
+                    "times_surfaced": 0,
+                }
+            }
+        }
+    )
+
+
 def test_review_uses_entry_ids_for_same_day_duplicates(robin_env):
     topic_file = robin_env["topics_dir"] / "ai-reasoning.md"
     topic_file.write_text(
@@ -133,43 +152,111 @@ def test_review_surfaces_media_metadata(robin_env):
 
 
 def test_review_text_output_includes_source(robin_env, monkeypatch, capsys):
-    topic_file = robin_env["topics_dir"] / "writing.md"
-    topic_file.write_text(
-        serialize_entry(
-            build_text_entry(
-                topic="Writing",
-                content="Write as if speaking to a smart friend.",
-                description="Writing advice.",
-                source="https://example.com/article",
-                note="",
-                tags=["writing"],
-                date_added="2026-04-08",
-                entry_id="20260408-a1f3c9",
-            )
-        )
-        + "\n",
-        encoding="utf-8",
-    )
-    save_index(
-        {
-            "items": {
-                "20260408-a1f3c9": {
-                    "id": "20260408-a1f3c9",
-                    "topic": "writing",
-                    "date": "2026-04-08",
-                    "rating": None,
-                    "last_surfaced": None,
-                    "times_surfaced": 0,
-                }
-            }
-        }
+    _save_review_entry(
+        robin_env,
+        "writing.md",
+        build_text_entry(
+            topic="Writing",
+            content="Write as if speaking to a smart friend.",
+            description="Writing advice.",
+            source="https://example.com/article",
+            note="",
+            tags=["writing"],
+            date_added="2026-04-08",
+            entry_id="20260408-a1f3c9",
+        ),
     )
 
     monkeypatch.setattr("sys.argv", ["review.py"])
     review.main()
     output = capsys.readouterr().out
 
+    assert "📚 Robin Recall: Helping you learn" in output
+    assert "Topic: writing" in output
+    assert "Type: text" in output
     assert "Source: https://example.com/article" in output
+    assert "Creator: Not provided" in output
+    assert "Saved on: 2026-04-08" in output
+    assert "Description:\nWriting advice." in output
+    assert "Body:\nWrite as if speaking to a smart friend." in output
+    assert "Rate it" not in output
+    assert "How well do you remember" not in output
+    assert "To rate" not in output
+
+
+def test_review_recall_text_output_uses_media_source_when_source_missing(robin_env, monkeypatch, capsys):
+    _save_review_entry(
+        robin_env,
+        "poetry.md",
+        build_media_entry(
+            topic="Poetry",
+            media_kind="image",
+            media_source="media/poetry/20260408-a1f3c9.png",
+            description="A photographed excerpt to revisit.",
+            creator="Mary Oliver",
+            published_at="1986",
+            summary="An excerpt about attention and observation.",
+            content="Opening lines from the page.",
+            source="",
+            note="",
+            tags=["poetry"],
+            date_added="2026-04-08",
+            entry_id="20260408-a1f3c9",
+        ),
+    )
+
+    monkeypatch.setattr("sys.argv", ["review.py"])
+    review.main()
+    output = capsys.readouterr().out
+
+    assert "📚 Robin Recall: Helping you learn" in output
+    assert "Topic: poetry" in output
+    assert "Type: image" in output
+    assert "Source: media/poetry/20260408-a1f3c9.png" in output
+    assert "Creator: Mary Oliver" in output
+    assert "Saved on: 2026-04-08" in output
+    assert "Description:\nA photographed excerpt to revisit." in output
+    assert "Body:\nOpening lines from the page." in output
+    assert "Rate it" not in output
+    assert "To rate" not in output
+
+
+def test_review_recall_text_output_is_consistent_for_video(robin_env, monkeypatch, capsys):
+    _save_review_entry(
+        robin_env,
+        "public-speaking.md",
+        build_media_entry(
+            topic="Public Speaking",
+            media_kind="video",
+            media_source="https://www.youtube.com/watch?v=abc123",
+            description="Patrick Winston's classic MIT lecture on How to Speak.",
+            creator="Patrick Winston (MIT)",
+            published_at="1970",
+            summary="A lecture about effective technical speaking.",
+            content="Start with an empowerment promise, not a joke.",
+            source="Patrick Winston -- How to Speak (YouTube)",
+            note="",
+            tags=["speaking"],
+            date_added="2026-04-11",
+            entry_id="20260411-003b06",
+        ),
+    )
+
+    monkeypatch.setattr("sys.argv", ["review.py"])
+    review.main()
+    output = capsys.readouterr().out
+
+    assert "📚 Robin Recall: Helping you learn" in output
+    assert "Topic: public-speaking" in output
+    assert "Type: video" in output
+    assert "Source: Patrick Winston -- How to Speak (YouTube)" in output
+    assert "Creator: Patrick Winston (MIT)" in output
+    assert "Saved on: 2026-04-11" in output
+    assert "Description:\nPatrick Winston's classic MIT lecture on How to Speak." in output
+    assert "Body:\nStart with an empowerment promise, not a joke." in output
+    assert "Rate it" not in output
+    assert "How well do you remember" not in output
+    assert "To rate" not in output
 
 
 def test_rate_item_writes_parseable_timestamp(robin_env):

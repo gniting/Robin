@@ -26,6 +26,27 @@ def _emit_json(payload: dict) -> None:
     print(json.dumps(payload, indent=2))
 
 
+def _recall_value(value: str) -> str:
+    return value.strip() if value.strip() else "Not provided"
+
+
+def _print_recall(entry) -> None:
+    source = entry.source.strip() or entry.media_source.strip()
+    print("📚 Robin Recall: Helping you learn")
+    print()
+    print(f"Topic: {_recall_value(entry.topic)}")
+    print(f"Type: {_recall_value(entry.entry_type)}")
+    print(f"Source: {_recall_value(source)}")
+    print(f"Creator: {_recall_value(entry.creator)}")
+    print(f"Saved on: {_recall_value(entry.date_added)}")
+    print()
+    print("Description:")
+    print(_recall_value(entry.description))
+    print()
+    print("Body:")
+    print(_recall_value(entry.body))
+
+
 def _add_to_topic(config: dict, explicit_state_dir: str | None, topic: str, entry_text: str) -> str:
     base = topics_path(config, explicit_state_dir)
     base.mkdir(parents=True, exist_ok=True)
@@ -307,28 +328,7 @@ def review_main(argv: list[str] | None = None) -> None:
         })
         return
 
-    print(f"[{entry.topic}.md] {entry.entry_id}")
-    print(f"Date: {entry.date_added} | Rating: {item.get('rating') or 'unrated'} | Surfaced: {item.get('times_surfaced', 0)}x")
-    if entry.entry_type != "text":
-        print(f"Type: {entry.entry_type}")
-    if entry.media_source:
-        print(f"Media: {entry.media_source}")
-    if entry.source:
-        print(f"Source: {entry.source}")
-    if entry.creator:
-        print(f"Creator: {entry.creator}")
-    if entry.published_at:
-        print(f"Published: {entry.published_at}")
-    if entry.summary:
-        print(f"Summary: {entry.summary}")
-    if entry.tags:
-        print(f"Tags: {', '.join(entry.tags)}")
-    if entry.description:
-        print(f"Description: {entry.description}")
-    print()
-    print(entry.body)
-    print()
-    print(f"→ To rate: rerun robin-review --rate \"{entry.entry_id}\" <1-5> with the same state-dir")
+    _print_recall(entry)
 
 
 def search_main(argv: list[str] | None = None) -> None:
